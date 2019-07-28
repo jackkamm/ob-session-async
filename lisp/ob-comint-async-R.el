@@ -27,67 +27,21 @@
 (require 'ob-R)
 (require 'ob-comint-async)
 
-;; TODO advice around org-babel-execute:R, that checks for :async, and
-;; if found adds a temporary to org-babel-R-evaluate, which it removes
-;; before exiting
-
 (defun ob-comint-async-org-babel-execute:R (orig-fun body params)
-    (let ((async (assq :async params))
-          (session (assq :session params)))
-      (if (or (not async)
-              (equal (cdr session) "none"))
-          (funcall orig-fun body params)
-        (advice-add 'org-babel-R-evaluate-session :override 'org-babel-R-evaluate-session-async)
-        (let ((result (funcall orig-fun body params)))
-          (advice-remove 'org-babel-R-evaluate-session 'org-babel-R-evaluate-session-async)
-          result))))
+  "TODO"
+  (let ((async (assq :async params))
+        (session (assq :session params)))
+    (if (or (not async)
+            (equal (cdr session) "none"))
+        (funcall orig-fun body params)
+      (advice-add 'org-babel-R-evaluate-session
+                  :override 'org-babel-R-evaluate-session-async)
+      (let ((result (funcall orig-fun body params)))
+        (advice-remove 'org-babel-R-evaluate-session
+                       'org-babel-R-evaluate-session-async)
+        result))))
 
 (advice-add 'org-babel-execute:R :around 'ob-comint-async-org-babel-execute:R)
-
-(defun ob-comint-async-org-babel-R-evaluate
-    (session body result-type result-params column-names-p row-names-p))
-
-(defun org-babel-R-value-from-tmp-file (result-params tmp-file)
-  "Insert result from TMP-FILE with RESULT-PARAMS."
-  (org-babel-result-cond result-params
-	  (with-temp-buffer
-	    (insert-file-contents tmp-file)
-	    (org-babel-chomp (buffer-string) "\n"))
-	  (org-babel-import-elisp-from-file tmp-file '(16))))
-
-(defun org-babel-R-clean-session-output (output)
-  "Remove extra prompts and empty lines from OUTPUT."
-  (delq nil
-	(mapcar
-	 (lambda (line) (when (> (length line) 0) line))
-	 (mapcar
-	  (lambda (line) ;; cleanup extra prompts left in output
-	    (if (string-match
-		 "^\\([>+.]\\([ ][>.+]\\)*[ ]\\)"
-		 (car (split-string line "\n")))
-		(substring line (match-end 1))
-	      line))
-	  output))))
-
-(defun org-babel-R-write-last-value-command (row-names-p column-names-p tmp-file)
-  "Generate R command to output last value to TMP-FILE."
-  (format org-babel-R-write-object-command
-	  (if row-names-p "TRUE" "FALSE")
-	  (if column-names-p
-	      (if row-names-p "NA" "TRUE")
-	    "FALSE")
-	  ".Last.value" (org-babel-process-file-name tmp-file 'noquote)))
-
-(defun org-babel-R-get-colnames-p (params)
-  "Determine whether to use column names from PARAMS of R Babel block."
-  (let* ((graphics-file (and (member "graphics" (assq :result-params params))
-			     (org-babel-graphical-output-file params)))
-	 (colnames-p (unless graphics-file (cdr (assq :colnames params)))))
-    (or (equal "yes" colnames-p)
-	(org-babel-pick-name
-	 (cdr (assq :colname-names params)) colnames-p))))
-
-;; Async evaluation
 
 (defconst org-babel-R-async-indicator "'org_babel_R_async_%s_%s'")
 (defconst org-babel-R-async-indicator-output
@@ -155,10 +109,53 @@ comint buffers used for asynchronous Babel evaluation."
 Assigned locally to `org-babel-comint-async-file-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (org-babel-R-process-value-result
-   (org-babel-R-value-from-tmp-file
+   (org-babel-r-value-from-tmp-file
     (assq :result-params params) tmp-file)
    ;; TODO this is not exactly the same as colnames-p above...
    (org-babel-R-get-colnames-p params)))
+
+
+;; helper functions
+
+(defun org-babel-R-value-from-tmp-file (result-params tmp-file)
+  "Insert result from TMP-FILE with RESULT-PARAMS."
+  (org-babel-result-cond result-params
+	  (with-temp-buffer
+	    (insert-file-contents tmp-file)
+	    (org-babel-chomp (buffer-string) "\n"))
+	  (org-babel-import-elisp-from-file tmp-file '(16))))
+
+(defun org-babel-R-clean-session-output (output)
+  "Remove extra prompts and empty lines from OUTPUT."
+  (delq nil
+	(mapcar
+	 (lambda (line) (when (> (length line) 0) line))
+	 (mapcar
+	  (lambda (line) ;; cleanup extra prompts left in output
+	    (if (string-match
+		 "^\\([>+.]\\([ ][>.+]\\)*[ ]\\)"
+		 (car (split-string line "\n")))
+		(substring line (match-end 1))
+	      line))
+	  output))))
+
+(defun org-babel-R-write-last-value-command (row-names-p column-names-p tmp-file)
+  "Generate R command to output last value to TMP-FILE."
+  (format org-babel-R-write-object-command
+	  (if row-names-p "TRUE" "FALSE")
+	  (if column-names-p
+	      (if row-names-p "NA" "TRUE")
+	    "FALSE")
+	  ".Last.value" (org-babel-process-file-name tmp-file 'noquote)))
+
+(defun org-babel-R-get-colnames-p (params)
+  "Determine whether to use column names from PARAMS of R Babel block."
+  (let* ((graphics-file (and (member "graphics" (assq :result-params params))
+			     (org-babel-graphical-output-file params)))
+	 (colnames-p (unless graphics-file (cdr (assq :colnames params)))))
+    (or (equal "yes" colnames-p)
+	(org-babel-pick-name
+	 (cdr (assq :colname-names params)) colnames-p))))
 
 (provide 'ob-comint-async-R)
 
