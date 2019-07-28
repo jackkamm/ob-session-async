@@ -32,6 +32,7 @@
   (let ((async (assq :async params))
         (session (assq :session params)))
     (if (or (not async)
+            (equal (cdr async) "no")
             (equal (cdr session) "none"))
         (funcall orig-fun body params)
       (advice-add 'org-babel-R-evaluate-session
