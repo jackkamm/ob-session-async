@@ -13,5 +13,5 @@ Under construction.
 
 * Links
 
-[[https://lists.gnu.org/archive/html/emacs-orgmode/2019-06/msg00014.html][emacs-orgmode post]]
-[[https://github.com/astahlman/ob-async/issues/1][ob-async issue #1]]
+- [[https://lists.gnu.org/archive/html/emacs-orgmode/2019-06/msg00014.html][emacs-orgmode post]]
+- [[https://github.com/astahlman/ob-async/issues/1][ob-async issue #1]]
