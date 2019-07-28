@@ -35,27 +35,26 @@
             (equal (cdr session) "none"))
         (funcall orig-fun body params)
       (advice-add 'org-babel-R-evaluate-session
-                  :override 'org-babel-R-evaluate-session-async)
+                  :override 'ob-comint-async-org-babel-R-evaluate-session)
       (let ((result (funcall orig-fun body params)))
         (advice-remove 'org-babel-R-evaluate-session
-                       'org-babel-R-evaluate-session-async)
+                       'ob-comint-async-org-babel-R-evaluate-session)
         result))))
 
 (advice-add 'org-babel-execute:R :around 'ob-comint-async-org-babel-execute:R)
 
-(defconst org-babel-R-async-indicator "'org_babel_R_async_%s_%s'")
-(defconst org-babel-R-async-indicator-output
-  "^\\[1\\] \"org_babel_R_async_\\(.+\\)_\\(.+\\)\"$")
+(defconst ob-comint-async-R-indicator "'ob_comint_async_R_%s_%s'")
 
-(defun org-babel-R-evaluate-session-async
+(defun ob-comint-async-org-babel-R-evaluate-session
     (session body result-type result-params column-names-p row-names-p)
   "Asynchronously evaluate BODY in SESSION.
 Returns a placeholder string for insertion, to later be replaced
-by `org-babel-comint-async-filter'."
-  (org-babel-comint-async-register session (current-buffer)
-				   org-babel-R-async-indicator-output
-				   'org-babel-R-async-output-callback
-				   'org-babel-R-async-value-callback)
+by `ob-comint-async-filter'."
+  (ob-comint-async-register
+   session (current-buffer)
+   "^\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
+   'ob-comint-async-R-output-callback
+   'ob-comint-async-R-value-callback)
   (cl-case result-type
     (value
      (let ((tmp-file (org-babel-temp-file "R-")))
@@ -77,7 +76,7 @@ by `org-babel-comint-async-filter'."
                            "FALSE")
                          ".Last.value"
                          (org-babel-process-file-name tmp-file 'noquote))
-                 (format org-babel-R-async-indicator
+                 (format ob-comint-async-R-indicator
                          "file" tmp-file))
            "\n"))
 	 (let ((ess-local-process-name
@@ -87,21 +86,21 @@ by `org-babel-comint-async-filter'."
        tmp-file))
     (output
      (let ((uuid (md5 (number-to-string (random 100000000)))))
-       (org-babel-comint-delete-dangling-and-eval
+       (ob-comint-async-delete-dangling-and-eval
 	   session
 	 (insert (mapconcat 'org-babel-chomp
-			    (list (format org-babel-R-async-indicator
+			    (list (format ob-comint-async-R-indicator
 					  "start" uuid)
 				  body
-				  (format org-babel-R-async-indicator
+				  (format ob-comint-async-R-indicator
 					  "end" uuid))
 			    "\n"))
 	 (inferior-ess-send-input))
        uuid))))
 
-(defun org-babel-R-async-output-callback (output)
+(defun ob-comint-async-R-output-callback (output)
   "Callback for async output results.
-Assigned locally to `org-babel-comint-async-chunk-callback' in R
+Assigned locally to `ob-comint-async-chunk-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (mapconcat
    'org-babel-chomp
@@ -122,9 +121,9 @@ comint buffers used for asynchronous Babel evaluation."
               output))))))
    "\n"))
 
-(defun org-babel-R-async-value-callback (params tmp-file)
+(defun ob-comint-async-R-value-callback (params tmp-file)
   "Callback for async value results.
-Assigned locally to `org-babel-comint-async-file-callback' in R
+Assigned locally to `ob-comint-async-file-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (let* ((graphics-file (and (member "graphics" (assq :result-params params))
 			     (org-babel-graphical-output-file params)))
