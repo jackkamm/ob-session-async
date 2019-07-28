@@ -25,6 +25,19 @@
 ;;; Code:
 
 (require 'ob-comint)
+(require 'ob-async)
+
+(defun ob-comint-async-org-babel-execute-src-block
+    (orig-advice orig-fun &optional arg info params)
+  (let ((block-info (nth 2 (or info (org-babel-get-src-block-info)))))
+    ;; if no :session, use the original ob-async advice
+    (if (equal (cdr (assoc :session block-info)) "none")
+        (funcall orig-advice orig-fun arg info params)
+      ;; else, skip it
+      (funcall orig-fun arg info params))))
+
+(advice-add 'ob-async-org-babel-execute-src-block
+            :around 'ob-comint-async-org-babel-execute-src-block)
 
 (defvar-local org-babel-comint-async-indicator nil
   "Regular expression that `org-babel-comint-async-filter' scans for.
