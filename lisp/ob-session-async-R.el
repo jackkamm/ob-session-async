@@ -1,4 +1,4 @@
-;;; ob-comint-async-R.el --- Async Babel Interaction with R sessions -*- lexical-binding: t -*-
+;;; ob-session-async-R.el --- Async Babel Interaction with R sessions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019
 
@@ -27,7 +27,7 @@
 (require 'ob-R)
 (require 'ob-session-async)
 
-(defun ob-comint-async-org-babel-execute:R (orig-fun body params)
+(defun ob-session-async-org-babel-execute:R (orig-fun body params)
   "TODO"
   (let ((async (assq :async params))
         (session (assq :session params)))
@@ -35,26 +35,26 @@
             (equal (cdr session) "none"))
         (funcall orig-fun body params)
       (advice-add 'org-babel-R-evaluate-session
-                  :override 'ob-comint-async-org-babel-R-evaluate-session)
+                  :override 'ob-session-async-org-babel-R-evaluate-session)
       (let ((result (funcall orig-fun body params)))
         (advice-remove 'org-babel-R-evaluate-session
-                       'ob-comint-async-org-babel-R-evaluate-session)
+                       'ob-session-async-org-babel-R-evaluate-session)
         result))))
 
-(advice-add 'org-babel-execute:R :around 'ob-comint-async-org-babel-execute:R)
+(advice-add 'org-babel-execute:R :around 'ob-session-async-org-babel-execute:R)
 
-(defconst ob-comint-async-R-indicator "'ob_comint_async_R_%s_%s'")
+(defconst ob-session-async-R-indicator "'ob_comint_async_R_%s_%s'")
 
-(defun ob-comint-async-org-babel-R-evaluate-session
+(defun ob-session-async-org-babel-R-evaluate-session
     (session body result-type result-params column-names-p row-names-p)
   "Asynchronously evaluate BODY in SESSION.
 Returns a placeholder string for insertion, to later be replaced
-by `ob-comint-async-filter'."
-  (ob-comint-async-register
+by `ob-session-async-filter'."
+  (ob-session-async-register
    session (current-buffer)
    "^\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
-   'ob-comint-async-R-output-callback
-   'ob-comint-async-R-value-callback)
+   'ob-session-async-R-output-callback
+   'ob-session-async-R-value-callback)
   (cl-case result-type
     (value
      (let ((tmp-file (org-babel-temp-file "R-")))
@@ -76,7 +76,7 @@ by `ob-comint-async-filter'."
                            "FALSE")
                          ".Last.value"
                          (org-babel-process-file-name tmp-file 'noquote))
-                 (format ob-comint-async-R-indicator
+                 (format ob-session-async-R-indicator
                          "file" tmp-file))
            "\n"))
 	 (let ((ess-local-process-name
@@ -86,21 +86,21 @@ by `ob-comint-async-filter'."
        tmp-file))
     (output
      (let ((uuid (md5 (number-to-string (random 100000000)))))
-       (ob-comint-async-delete-dangling-and-eval
+       (ob-session-async-delete-dangling-and-eval
 	   session
 	 (insert (mapconcat 'org-babel-chomp
-			    (list (format ob-comint-async-R-indicator
+			    (list (format ob-session-async-R-indicator
 					  "start" uuid)
 				  body
-				  (format ob-comint-async-R-indicator
+				  (format ob-session-async-R-indicator
 					  "end" uuid))
 			    "\n"))
 	 (inferior-ess-send-input))
        uuid))))
 
-(defun ob-comint-async-R-output-callback (output)
+(defun ob-session-async-R-output-callback (output)
   "Callback for async output results.
-Assigned locally to `ob-comint-async-chunk-callback' in R
+Assigned locally to `ob-session-async-chunk-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (mapconcat
    'org-babel-chomp
@@ -121,9 +121,9 @@ comint buffers used for asynchronous Babel evaluation."
               output))))))
    "\n"))
 
-(defun ob-comint-async-R-value-callback (params tmp-file)
+(defun ob-session-async-R-value-callback (params tmp-file)
   "Callback for async value results.
-Assigned locally to `ob-comint-async-file-callback' in R
+Assigned locally to `ob-session-async-file-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (let* ((graphics-file (and (member "graphics" (assq :result-params params))
 			     (org-babel-graphical-output-file params)))
@@ -138,6 +138,6 @@ comint buffers used for asynchronous Babel evaluation."
 	 (org-babel-pick-name
 	  (cdr (assq :colname-names params)) colnames-p)))))
 
-(provide 'ob-comint-async-R)
+(provide 'ob-session-async-R)
 
-;;; ob-comint-async-R.el ends here
+;;; ob-session-async-R.el ends here
