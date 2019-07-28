@@ -25,7 +25,7 @@
 ;;; Code:
 
 (require 'ob-R)
-(require 'ob-comint-async)
+(require 'ob-session-async)
 
 (defun ob-comint-async-org-babel-execute:R (orig-fun body params)
   "TODO"
