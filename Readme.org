@@ -5,6 +5,10 @@ Under construction.
 * Example
 
 #+begin_src org
+  ,#+begin_src emacs-lisp
+    (require 'ob-session-async-R)
+  ,#+end_src
+
   ,#+begin_src R :async :session
     Sys.sleep(5)
     "this won't hang your emacs"
