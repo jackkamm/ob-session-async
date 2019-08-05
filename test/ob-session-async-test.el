@@ -26,7 +26,7 @@
         (ess-eval-visibly 'nowait))
     (org-test-with-temp-text
      "#+begin_src R :session R :results output :async yes\n  Sys.sleep(.1)\n  1:5\n#+end_src\n"
-     (should (let ((expected "[1] 1 2 3 4 5")) ;;TODO should be just "[1] 1 2 3 4 5"
+     (should (let ((expected "[1] 1 2 3 4 5"))
 	       (and (not (string= expected (org-babel-execute-src-block)))
 		    (string= expected
 			     (progn
