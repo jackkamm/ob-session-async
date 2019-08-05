@@ -23,7 +23,7 @@ Under construction.
   use it with Python. However, there are some settings where I would
   rather not use jupyter -- in particular, when working in R, I prefer
   using the [[https://ess.r-project.org/][ESS (Emacs Speaks Statistics)]]
-  environment instead, which was my main motivation for writing
+  environment instead. This was my main motivation for writing
   =ob-session-async=.
 - [[https://github.com/astahlman/ob-async][ob-async]] enables async
   evaluation for regular (non-session) org-babel source blocks. It
