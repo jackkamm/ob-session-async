@@ -26,6 +26,7 @@
 
 (require 'ob-R)
 (require 'ob-session-async)
+(require 'subr-x)
 
 (defun ob-session-async-org-babel-execute:R (orig-fun body params)
   "TODO"
