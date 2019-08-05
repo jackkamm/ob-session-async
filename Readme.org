@@ -27,7 +27,7 @@ Under construction.
   =ob-session-async=.
 - [[https://github.com/astahlman/ob-async][ob-async]] enables async
   evaluation for regular (non-session) org-babel source blocks. It
-  does not support the =:session= header argument for evaluating
+  does *not* support the =:session= header argument for evaluating
   multiple source blocks in an existing session.
 
 * Links
