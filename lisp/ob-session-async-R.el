@@ -53,7 +53,7 @@ Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
   (ob-session-async-register
    session (current-buffer)
-   "^\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
+   "^\\(?:> \\)?\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
    'ob-session-async-R-output-callback
    'ob-session-async-R-value-callback)
   (cl-case result-type
@@ -105,6 +105,7 @@ Assigned locally to `ob-session-async-chunk-callback' in R
 comint buffers used for asynchronous Babel evaluation."
   (mapconcat
    'org-babel-chomp
+   ;; First/last lines are just the start/end tokens, so remove them
    (cdr
     (butlast
      (mapcar
