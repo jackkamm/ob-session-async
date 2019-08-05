@@ -15,6 +15,21 @@ Under construction.
   ,#+end_src
 #+end_src
 
+* Related packages
+
+- [[https://github.com/dzop/emacs-jupyter][emacs-jupyter]] enables
+  using jupyter kernels with org-babel source blocks and supports
+  async session evaluation. It's an excellent package and I frequently
+  use it with Python. However, there are some settings where I would
+  rather not use jupyter -- in particular, when working in R, I prefer
+  using the [[https://ess.r-project.org/][ESS (Emacs Speaks Statistics)]]
+  environment instead, which was my main motivation for writing
+  =ob-session-async=.
+- [[https://github.com/astahlman/ob-async][ob-async]] enables async
+  evaluation for regular (non-session) org-babel source blocks. It
+  does not support the =:session= header argument for evaluating
+  multiple source blocks in an existing session.
+
 * Links
 
 - [[https://lists.gnu.org/archive/html/emacs-orgmode/2019-06/msg00014.html][emacs-orgmode post]]
