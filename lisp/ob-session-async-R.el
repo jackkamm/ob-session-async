@@ -54,7 +54,7 @@ Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
   (ob-session-async-register
    session (current-buffer)
-   "^\\(?:> \\)?\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
+   "^\\(?:[>.+] \\)*\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
    'ob-session-async-R-output-callback
    'ob-session-async-R-value-callback)
   (cl-case result-type
