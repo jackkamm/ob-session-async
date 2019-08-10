@@ -36,12 +36,13 @@
             (equal (cdr async) "no")
             (equal (cdr session) "none"))
         (funcall orig-fun body params)
-      (advice-add 'org-babel-R-evaluate-session
-                  :override 'ob-session-async-org-babel-R-evaluate-session)
-      (let ((result (funcall orig-fun body params)))
-        (advice-remove 'org-babel-R-evaluate-session
-                       'ob-session-async-org-babel-R-evaluate-session)
-        result))))
+      (let (ess-eval-visibly)
+        (advice-add 'org-babel-R-evaluate-session
+                    :override 'ob-session-async-org-babel-R-evaluate-session)
+        (let ((result (funcall orig-fun body params)))
+          (advice-remove 'org-babel-R-evaluate-session
+                         'ob-session-async-org-babel-R-evaluate-session)
+          result)))))
 
 (advice-add 'org-babel-execute:R :around 'ob-session-async-org-babel-execute:R)
 
@@ -64,8 +65,7 @@ by `ob-session-async-filter'."
        (insert
 	(org-babel-chomp body))
        (let ((ess-local-process-name
-	      (process-name (get-buffer-process session)))
-	     (ess-eval-visibly-p nil))
+	      (process-name (get-buffer-process session))))
 	 (ess-eval-buffer nil)))
        (with-temp-buffer
 	 (insert
@@ -82,8 +82,7 @@ by `ob-session-async-filter'."
                          "file" tmp-file))
            "\n"))
 	 (let ((ess-local-process-name
-		(process-name (get-buffer-process session)))
-	       (ess-eval-visibly-p nil))
+		(process-name (get-buffer-process session))))
 	   (ess-eval-buffer nil)))
        tmp-file))
     (output

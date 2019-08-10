@@ -7,8 +7,7 @@
 (ert-deftest ob-session-async-R-simple-session-async-value ()
   (let (ess-ask-for-ess-directory
         ess-history-file
-        (org-confirm-babel-evaluate nil)
-        (ess-eval-visibly 'nowait))
+        (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
      "#+begin_src R :session R :async yes\n  Sys.sleep(.1)\n  paste(\"Yep!\")\n#+end_src\n"
      (should (let ((expected "Yep!"))
@@ -22,8 +21,7 @@
 (ert-deftest ob-session-async-R-simple-session-async-output ()
   (let (ess-ask-for-ess-directory
         ess-history-file
-        (org-confirm-babel-evaluate nil)
-        (ess-eval-visibly 'nowait))
+        (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
      "#+begin_src R :session R :results output :async yes\n  Sys.sleep(.1)\n  1:5\n#+end_src\n"
      (should (let ((expected "[1] 1 2 3 4 5"))
