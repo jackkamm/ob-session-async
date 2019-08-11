@@ -56,7 +56,7 @@ by `ob-session-async-filter'."
   (ob-session-async-register
    session (current-buffer)
    "^\\(?:[>.+] \\)*\\[1\\] \"ob_comint_async_R_\\(.+\\)_\\(.+\\)\"$"
-   'ob-session-async-R-output-callback
+   'identity
    'ob-session-async-R-value-callback)
   (cl-case result-type
     (value
@@ -86,42 +86,19 @@ by `ob-session-async-filter'."
 	   (ess-eval-buffer nil)))
        tmp-file))
     (output
-     (let ((uuid (md5 (number-to-string (random 100000000)))))
-       (ob-session-async-delete-dangling-and-eval
-	   session
-	 (insert (mapconcat 'org-babel-chomp
-			    (list (format ob-session-async-R-indicator
-					  "start" uuid)
-				  body
-				  (format ob-session-async-R-indicator
+     (let ((uuid (md5 (number-to-string (random 100000000))))
+           (ess-local-process-name
+            (process-name (get-buffer-process session))))
+       (with-temp-buffer
+         (insert (format ob-session-async-R-indicator
+					  "start" uuid))
+         (insert "\n")
+         (insert body)
+         (insert "\n")
+         (insert (format ob-session-async-R-indicator
 					  "end" uuid))
-			    "\n"))
-	 (inferior-ess-send-input))
+         (ess-eval-buffer nil))
        uuid))))
-
-(defun ob-session-async-R-output-callback (output)
-  "Callback for async output results.
-Assigned locally to `ob-session-async-chunk-callback' in R
-comint buffers used for asynchronous Babel evaluation."
-  (mapconcat
-   'org-babel-chomp
-   ;; First/last lines are just the start/end tokens, so remove them
-   (cdr
-    (butlast
-     (mapcar
-      (lambda (line) (string-remove-prefix "\n" line))
-      (delq nil
-            (mapcar
-             (lambda (line) (when (> (length line) 0) line))
-             (mapcar
-              (lambda (line) ;; cleanup extra prompts left in output
-                (if (string-match
-                     "^\\([>+.]\\([ ][>.+]\\)*[ ]\\)"
-                     (car (split-string line "\n")))
-                    (substring line (match-end 1))
-                  line))
-              output))))))
-   "\n"))
 
 (defun ob-session-async-R-value-callback (params tmp-file)
   "Callback for async value results.

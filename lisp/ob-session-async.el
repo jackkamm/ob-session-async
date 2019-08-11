@@ -126,18 +126,16 @@ STRING contains the output originally inserted into the comint buffer."
 	    (let* ((uuid (match-string-no-properties 2))
 		   (res-str-raw
 		    (buffer-substring
-		     ;; move point to end of indicator
-		     (re-search-forward indicator)
+		     ;; move point to beginning of indicator
+                     (- (match-beginning 0) 1)
 		     ;; find the matching start indicator
 		     (cl-loop for pos = (re-search-backward indicator)
 			   until (and (equal (match-string 1) "start")
 				      (equal (match-string 2) uuid))
-			   finally return pos)))
+			   finally return (+ 1 (match-end 0)))))
 		   ;; Apply callback to clean up the result
 		   (res-str (funcall ob-session-async-chunk-callback
-				     (split-string
-				      res-str-raw
-				      comint-prompt-regexp))))
+                                     res-str-raw)))
 	      ;; Search for uuid in associated org-buffers to insert results
 	      (cl-loop for buf in org-buffers
 		    until (with-current-buffer buf
