@@ -62,11 +62,11 @@ by `ob-session-async-filter'."
     (value
      (let ((tmp-file (org-babel-temp-file "R-")))
        (with-temp-buffer
-       (insert
-	(org-babel-chomp body))
-       (let ((ess-local-process-name
-	      (process-name (get-buffer-process session))))
-	 (ess-eval-buffer nil)))
+         (insert
+          (org-babel-chomp body))
+         (let ((ess-local-process-name
+                (process-name (get-buffer-process session))))
+           (ess-eval-buffer nil)))
        (with-temp-buffer
 	 (insert
 	  (mapconcat
