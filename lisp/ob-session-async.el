@@ -143,8 +143,7 @@ STRING contains the output originally inserted into the comint buffer."
 			      (goto-char (point-min))
 			      (when (search-forward uuid nil t)
 				(org-babel-previous-src-block)
-				(org-babel-remove-result)
-				(org-babel-insert-result res-str)
+				(org-babel-insert-result res-str '("replace"))
 				t))))
 	      ;; Remove uuid from the list to search for
 	      (setq uuid-list (delete uuid uuid-list)))))))))

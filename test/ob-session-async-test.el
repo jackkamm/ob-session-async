@@ -32,4 +32,18 @@
 			       (goto-char (org-babel-where-is-src-block-result))
 			       (org-babel-read-result)))))))))
 
+(ert-deftest ob-session-async-R-named-output ()
+  (let (ess-ask-for-ess-directory
+        ess-history-file
+        org-confirm-babel-evaluate
+        (src-block "#+begin_src R :async :session R :results output\n  1:5\n#+end_src")
+        (results-before "\n\n#+NAME: foobar\n#+RESULTS:\n: [1] 1")
+        (results-after "\n\n#+NAME: foobar\n#+RESULTS:\n: [1] 1 2 3 4 5\n"))
+    (org-test-with-temp-text
+     (concat src-block results-before)
+     (should (progn (org-babel-execute-src-block)
+                    (sleep-for 0 200)
+                    (string= (concat src-block results-after)
+                             (buffer-string)))))))
+
 ;;; ob-session-async-test.el ends here
