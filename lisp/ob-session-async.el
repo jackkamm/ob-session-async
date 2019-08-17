@@ -105,12 +105,16 @@ STRING contains the output originally inserted into the comint buffer."
 			   (goto-char (point-min))
 			   (when (search-forward tmp-file nil t)
 			     (org-babel-previous-src-block)
-			     (org-babel-remove-result)
-			     (org-babel-insert-result
-			      (funcall file-callback
-				       (nth
-					2 (org-babel-get-src-block-info))
-				       tmp-file))
+                             (let* ((info (org-babel-get-src-block-info))
+                                    (params (nth 2 info))
+                                    (result-params
+                                     (cdr (assq :result-params params))))
+                               (org-babel-insert-result
+                                 (funcall file-callback
+                                          (nth
+                                           2 (org-babel-get-src-block-info))
+                                          tmp-file)
+                                result-params info))
 			     t))))))))
       ;; Truncate dangling to only the most recent output
       (when (> (length new-dangling) (length string))
@@ -143,7 +147,12 @@ STRING contains the output originally inserted into the comint buffer."
 			      (goto-char (point-min))
 			      (when (search-forward uuid nil t)
 				(org-babel-previous-src-block)
-				(org-babel-insert-result res-str '("replace"))
+                                (let* ((info (org-babel-get-src-block-info))
+                                       (params (nth 2 info))
+                                       (result-params
+                                        (cdr (assq :result-params params))))
+				  (org-babel-insert-result
+                                   res-str result-params info))
 				t))))
 	      ;; Remove uuid from the list to search for
 	      (setq uuid-list (delete uuid uuid-list)))))))))

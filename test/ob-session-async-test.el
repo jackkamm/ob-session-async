@@ -46,4 +46,44 @@
                     (string= (concat src-block results-after)
                              (buffer-string)))))))
 
+(ert-deftest ob-session-async-R-named-value ()
+  (let (ess-ask-for-ess-directory
+        ess-history-file
+        org-confirm-babel-evaluate
+        (src-block "#+begin_src R :async :session R :results value\n  paste(\"Yep!\")\n#+end_src")
+        (results-before "\n\n#+NAME: foobar\n#+RESULTS:\n: [1] 1")
+        (results-after "\n\n#+NAME: foobar\n#+RESULTS:\n: Yep!\n"))
+    (org-test-with-temp-text
+     (concat src-block results-before)
+     (should (progn (org-babel-execute-src-block)
+                    (sleep-for 0 200)
+                    (string= (concat src-block results-after)
+                             (buffer-string)))))))
+
+(ert-deftest ob-session-async-R-output-drawer ()
+  (let (ess-ask-for-ess-directory
+        ess-history-file
+        org-confirm-babel-evaluate
+        (src-block "#+begin_src R :async :session R :results output drawer\n  1:5\n#+end_src")
+        (result "\n\n#+RESULTS:\n:results:\n[1] 1 2 3 4 5\n:end:\n"))
+    (org-test-with-temp-text
+     src-block
+     (should (progn (org-babel-execute-src-block)
+                    (sleep-for 0 200)
+                    (string= (concat src-block result)
+                             (buffer-string)))))))
+
+(ert-deftest ob-session-async-R-value-drawer ()
+  (let (ess-ask-for-ess-directory
+        ess-history-file
+        org-confirm-babel-evaluate
+        (src-block "#+begin_src R :async :session R :results value drawer\n  1:3\n#+end_src")
+        (result "\n\n#+RESULTS:\n:results:\n1\n2\n3\n:end:\n"))
+    (org-test-with-temp-text
+     src-block
+     (should (progn (org-babel-execute-src-block)
+                    (sleep-for 0 200)
+                    (string= (concat src-block result)
+                             (buffer-string)))))))
+
 ;;; ob-session-async-test.el ends here
