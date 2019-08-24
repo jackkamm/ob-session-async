@@ -21,7 +21,8 @@
 
 ;;; Commentary:
 
-;; TODO
+;; Functions for asynchronous session evaluation of org-babel source
+;; blocks in comint buffers.
 
 ;;; Code:
 

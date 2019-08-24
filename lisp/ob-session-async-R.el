@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; TODO
+;; Support for evaluating R code asynchronously in org-babel sessions.
 
 ;;; Code:
 
@@ -29,7 +29,7 @@
 (require 'subr-x)
 
 (defun ob-session-async-org-babel-execute:R (orig-fun body params)
-  "TODO"
+  "Advice around `org-babel-execute:R' to enable asynchronous evaluation."
   (let ((async (assq :async params))
         (session (assq :session params)))
     (if (or (not async)
