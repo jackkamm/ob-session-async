@@ -1,14 +1,33 @@
 #+TITLE: ob-session-async
 
-Under construction.
+This package extends org-babel to allow asynchronous session evaluation.
 
-* Example
+It currently implements async session evaluation for R, and also
+provides functionality for implementing async session evaluation in
+other language modes that use comint.
+
+* Status
+
+This package is still in an experimental stage, and not available in MELPA.
+
+However, the code is fairly robust now, and I am using it regularly for my
+day-to-day data analysis in R.
+
+The org-mode mailing list has recently expressed interest in including
+this code in org-mode ([[https://lists.gnu.org/archive/html/emacs-orgmode/2019-08/msg00191.html][thread]]), and a medium-term goal of the project
+is to contribute this functionality back upstream to org-mode.
+
+My next short-term goal is to implement this functionality for at
+least one other language, probably Python.
+
+* Installation & usage
+
+First ensure the ~lisp/~ directory is in your ~load-path~, and ~R~ is
+in ~org-babel-load-languages~. Then, ~(require
+'ob-session-async-R)~. You will then be able to asynchronously
+evaluate R code blocks like the below:
 
 #+begin_src org
-  ,#+begin_src emacs-lisp
-    (require 'ob-session-async-R)
-  ,#+end_src
-
   ,#+begin_src R :async :session
     Sys.sleep(5)
     "this won't hang your emacs"
@@ -29,6 +48,23 @@ Under construction.
   evaluation for regular (non-session) org-babel source blocks. It
   does *not* support the =:session= header argument for evaluating
   multiple source blocks in an existing session.
+
+* How it works
+
+Whenever new output is added to the session's comint buffer, the
+function ~ob-session-async-filter~ scans the output for an indicator
+token. Upon encountering the token, the filter uses a regular
+expression to extract a UUID or temp-file associated with the result,
+then searches for the appropriate location to add the result in.
+
+This code is loosely based on ~org-babel-comint-with-output~ in
+~ob-comint.el~, which is the upstream code in org-mode to evaluate
+code in a comint session and return the output.
+
+A lot of the code in this package is just copied from org-mode, then
+slightly adjusted to accommodate async evaluation. I plan to
+eventually refactor the code and contribute it back upstream to
+org-mode, to reduce code duplication and improve code reuse.
 
 * Links
 
