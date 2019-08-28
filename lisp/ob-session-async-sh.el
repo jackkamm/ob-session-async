@@ -58,8 +58,8 @@ by `ob-session-async-filter'."
    'org-babel-chomp
    'ob-session-async-sh-value-callback)
   (let* ((shebang (cdr (assq :shebang params)))
-        (uuid (md5 (number-to-string (random 100000000))))
-        (prompt (format "%s>" uuid)))
+         (uuid (md5 (number-to-string (random 100000000))))
+         (prompt (format "%s>" uuid)))
     (with-current-buffer (generate-new-buffer "*sh-temp*")
       (let ((temp-buffer (current-buffer)))
         (insert (concat "PS2=$'\\n" prompt "'\n"))
@@ -81,38 +81,38 @@ by `ob-session-async-filter'."
                                          (setq last-command 'nil)
                                          (kill-whole-line)
                                          (org-babel-comint-in-buffer session
-                                           (goto-char (process-mark (get-buffer-process (current-buffer))))
-                                           (yank)
-                                           (delete-backward-char 1)
-                                           (comint-send-input)))
+                                                                     (goto-char (process-mark (get-buffer-process (current-buffer))))
+                                                                     (yank)
+                                                                     (delete-backward-char 1)
+                                                                     (comint-send-input)))
                                      ((end-of-buffer)
                                       (kill-buffer temp-buffer)
                                       (remove-hook 'comint-output-filter-functions #'send-line)))))
                                ""))
           (org-babel-comint-in-buffer session
-            (add-hook 'comint-output-filter-functions #'send-line)
-            (goto-char (process-mark (get-buffer-process (current-buffer))))
-            (insert (concat "PS1=$'\\n" prompt "'"))
-            (comint-send-input)))))
+                                      (add-hook 'comint-output-filter-functions #'send-line)
+                                      (goto-char (process-mark (get-buffer-process (current-buffer))))
+                                      (insert (concat "PS1=$'\\n" prompt "'"))
+                                      (comint-send-input)))))
     uuid))
 
-  (defun ob-session-async-sh-value-callback (params tmp-file)
-    "Callback for async value results.
+(defun ob-session-async-sh-value-callback (params tmp-file)
+  "Callback for async value results.
 Assigned locally to `ob-session-async-file-callback' in sh
 comint buffers used for asynchronous Babel evaluation."
-    (let* ((graphics-file (and (member "graphics" (assq :result-params params))
-                               (org-babel-graphical-output-file params)))
-           (colnames-p (unless graphics-file (cdr (assq :colnames params)))))
-      (org-babel-sh-process-value-result
-       (org-babel-result-cond (assq :result-params params)
-         (with-temp-buffer
-           (insert-file-contents tmp-file)
-           (org-babel-chomp (buffer-string) "\n"))
-         (org-babel-import-elisp-from-file tmp-file '(16)))
-       (or (equal "yes" colnames-p)
-           (org-babel-pick-name
-            (cdr (assq :colname-names params)) colnames-p)))))
+  (let* ((graphics-file (and (member "graphics" (assq :result-params params))
+                             (org-babel-graphical-output-file params)))
+         (colnames-p (unless graphics-file (cdr (assq :colnames params)))))
+    (org-babel-sh-process-value-result
+     (org-babel-result-cond (assq :result-params params)
+                            (with-temp-buffer
+                              (insert-file-contents tmp-file)
+                              (org-babel-chomp (buffer-string) "\n"))
+                            (org-babel-import-elisp-from-file tmp-file '(16)))
+     (or (equal "yes" colnames-p)
+         (org-babel-pick-name
+          (cdr (assq :colname-names params)) colnames-p)))))
 
-  (provide 'ob-session-async-sh)
+(provide 'ob-session-async-sh)
 
 ;;; ob-session-async-R.el ends here
