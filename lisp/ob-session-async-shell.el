@@ -1,4 +1,4 @@
-;;; ob-session-async-sh.el --- Async Babel Interaction with sh sessions -*- lexical-binding: t -*-
+;;; ob-session-async-shell.el --- Async Babel Interaction with shell sessions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019
 
@@ -20,15 +20,15 @@
 
 ;;; Commentary:
 
-;; Support for evaluating sh code asynchronously in org-babel sessions.
+;; Support for evaluating shell code asynchronously in org-babel sessions.
 
 ;;; Code:
 
 (require 'ob-session-async)
 (require 'subr-x)
 
-(defun ob-session-async-org-babel-execute:sh (orig-fun body params)
-  "Advice around `org-babel-execute:sh' to enable asynchronous evaluation."
+(defun ob-session-async-org-babel-execute:shell (orig-fun body params)
+  "Advice around `org-babel-execute:shell' to enable asynchronous evaluation."
   (let ((async (assq :async params))
         (session (assq :session params)))
     (if (or (not async)
@@ -43,7 +43,7 @@
                          'ob-session-async-org-babel-sh-evaluate-session)
           result)))))
 
-(advice-add 'org-babel-execute:sh :around 'ob-session-async-org-babel-execute:sh)
+(advice-add 'org-babel-execute:shell :around 'ob-session-async-org-babel-execute:shell)
 
 (defconst ob-session-async-sh-indicator "printf 'ob_comint_async_sh_%s_%s'")
 
@@ -52,14 +52,20 @@
   "Asynchronously evaluate BODY in SESSION.
 Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
-  (ob-session-async-register
-   session (current-buffer)
-   "^ob_comint_async_sh_\\(.+\\)_\\(.+\\)$"
-   'org-babel-chomp
-   'ob-session-async-sh-value-callback)
   (let* ((shebang (cdr (assq :shebang params)))
          (uuid (md5 (number-to-string (random 100000000))))
-         (prompt (format "%s>" uuid)))
+         (prompt (format "%s>" uuid))
+         (comint-prompt-regexp (format "^%s" prompt)))
+    (cl-flet ((remove-prompt (string)
+                             (replace-regexp-in-string
+                              (concat "\n?" prompt ".*\n?")
+                              ""
+                              string)))
+      (ob-session-async-register
+       session (current-buffer)
+       "^ob_comint_async_sh_\\(.+\\)_\\(.+\\)$"
+       #'remove-prompt
+       'ob-session-async-sh-value-callback))
     (with-current-buffer (generate-new-buffer "*sh-temp*")
       (let ((temp-buffer (current-buffer)))
         (insert (concat "PS2=$'\\n" prompt "'\n"))
@@ -98,21 +104,11 @@ by `ob-session-async-filter'."
 
 (defun ob-session-async-sh-value-callback (params tmp-file)
   "Callback for async value results.
-Assigned locally to `ob-session-async-file-callback' in sh
+Assigned locally to `ob-session-async-file-callback' in shell
 comint buffers used for asynchronous Babel evaluation."
-  (let* ((graphics-file (and (member "graphics" (assq :result-params params))
-                             (org-babel-graphical-output-file params)))
-         (colnames-p (unless graphics-file (cdr (assq :colnames params)))))
-    (org-babel-sh-process-value-result
-     (org-babel-result-cond (assq :result-params params)
-                            (with-temp-buffer
-                              (insert-file-contents tmp-file)
-                              (org-babel-chomp (buffer-string) "\n"))
-                            (org-babel-import-elisp-from-file tmp-file '(16)))
-     (or (equal "yes" colnames-p)
-         (org-babel-pick-name
-          (cdr (assq :colname-names params)) colnames-p)))))
+  ;; TODO: Fix stub
+  ())
 
-(provide 'ob-session-async-sh)
+(provide 'ob-session-async-shell)
 
-;;; ob-session-async-R.el ends here
+;;; ob-session-async-shell.el ends here
