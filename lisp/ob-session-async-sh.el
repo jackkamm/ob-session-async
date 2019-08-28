@@ -45,7 +45,7 @@
 
 (advice-add 'org-babel-execute:sh :around 'ob-session-async-org-babel-execute:sh)
 
-(defconst ob-session-async-sh-indicator "printf '\\nob_comint_async_sh_%s_%s\\n'")
+(defconst ob-session-async-sh-indicator "printf 'ob_comint_async_sh_%s_%s'")
 
 (defun ob-session-async-org-babel-sh-evaluate-session
     (session body &optional params stdin cmdline)
@@ -59,39 +59,42 @@ by `ob-session-async-filter'."
    'ob-session-async-sh-value-callback)
   (let* ((shebang (cdr (assq :shebang params)))
         (uuid (md5 (number-to-string (random 100000000))))
-        (temp-file (org-babel-temp-file nil ".sh"))
         (prompt (format "%s>" uuid)))
-    (save-excursion
-      (setq temp-buffer (generate-new-buffer "*sh-temp*"))
-      (switch-to-buffer temp-buffer)
-      (insert (concat "PS2=$'\\n" prompt "'\n"))
-      (insert (format ob-session-async-sh-indicator
-                      "start" uuid))
-      (insert "\n")
-      (insert body)
-      (insert "\n")
-      (insert (format ob-session-async-sh-indicator
-                      "end" uuid))
+    (with-current-buffer (generate-new-buffer "*sh-temp*")
+      (let ((temp-buffer (current-buffer)))
+        (insert (concat "PS2=$'\\n" prompt "'\n"))
+        (insert (format ob-session-async-sh-indicator
+                        "start" uuid))
+        (insert "\n")
+        (insert body)
+        (insert "\n")
+        (insert (format ob-session-async-sh-indicator
+                        "end" uuid))
+        (insert "\n")
 
-      (cl-labels ((send-line (prompt?)
-                             (when (equal `(,prompt) (last (split-string prompt? "\n")))
-                               (save-excursion
-                                 (switch-to-buffer temp-buffer)
-                                 (beginning-of-buffer)
-                                 (condition-case nil
-                                     (kill-whole-line)
-                                   ((end-of-buffer)
-                                    (remove-hook 'comint-output-filter-functions #'send-line))))
-                               (yank)
-                               (goto-char (process-mark (get-buffer-process (current-buffer))))
-                               (comint-send-input))
-                             prompt?))
-        (org-babel-comint-in-buffer session
-          (add-hook 'comint-output-filter-functions #'send-line)
-          (goto-char (process-mark (get-buffer-process (current-buffer))))
-          (insert (concat "PS1=$'\\n" prompt "'\n"))
-          (comint-send-input))))
-      uuid))
+        (cl-labels ((send-line (prompt?)
+                               (when (equal `(,prompt) (last (split-string prompt? "\n")))
+                                 (with-current-buffer temp-buffer
+                                   (beginning-of-buffer)
+                                   (condition-case nil
+                                       (progn
+                                         (setq last-command 'nil)
+                                         (kill-whole-line)
+                                         (org-babel-comint-in-buffer session
+                                           (goto-char (process-mark (get-buffer-process (current-buffer))))
+                                           (yank)
+                                           (delete-backward-char 1)
+                                           (comint-send-input)))
+                                     ((end-of-buffer)
+                                      (kill-buffer temp-buffer)
+                                      (remove-hook 'comint-output-filter-functions #'send-line)))))
+                               ""))
+          (org-babel-comint-in-buffer session
+            (add-hook 'comint-output-filter-functions #'send-line)
+            (goto-char (process-mark (get-buffer-process (current-buffer))))
+            (insert (concat "PS1=$'\\n" prompt "'"))
+            (comint-send-input)))))
+    uuid))
 
   (defun ob-session-async-sh-value-callback (params tmp-file)
     "Callback for async value results.
