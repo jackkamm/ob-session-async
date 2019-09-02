@@ -62,9 +62,10 @@ The callback function takes two arguments: the alist of params of the Babel
 source block, and the name of the temp file.")
 
 (defvar-local ob-session-async-chunk-callback nil
-  "Callback to clean Babel async output results before insertion.
-The input is assumed to be split by `comint-prompt-regexp', as in
- `org-babel-comint-with-output'. The output should be a string.")
+  "Callback function to clean Babel async output results before insertion.
+Its single argument is a string consisting of output from the
+comint process. It should return a string that will be be passed
+to `org-babel-insert-result'.")
 
 (defvar-local ob-session-async-dangling nil
   "Dangling piece of the last process output, in case
