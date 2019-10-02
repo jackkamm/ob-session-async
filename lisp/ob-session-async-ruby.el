@@ -77,15 +77,20 @@ by `ob-session-async-filter'."
                      (member "pp" result-params))))
         (with-current-buffer buffer
           ;; (buffer org-babel-ruby-eoe-indicator t body)
-          (when ppp (insert "require 'pp';") (comint-send-input nil t))
+          (when ppp (insert "\nrequire 'pp';") (comint-send-input nil t))
           (insert "\n")
           (mapc
             (lambda (line)
               (insert (org-babel-chomp line)) (comint-send-input nil t))
             (append
               (list body)
-              (list (format org-babel-ruby-f-write
-                      (org-babel-process-file-name tmp-file 'noquote)))
+              (if (not ppp)
+                (list (format org-babel-ruby-f-write
+                        (org-babel-process-file-name tmp-file 'noquote)))
+                (list
+                  "results=_" "require 'pp'" "orig_out = $stdout"
+                  (format org-babel-ruby-pp-f-write
+			              (org-babel-process-file-name tmp-file 'noquote))))
               (list (format ob-session-async-ruby-indicator "file" tmp-file))))
           (comint-send-input nil t))
         tmp-file))))
