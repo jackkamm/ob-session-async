@@ -1,4 +1,4 @@
-;;; ob-session-async-R.el --- Async Babel Interaction with R sessions -*- lexical-binding: t -*-
+;;; ob-session-async-ruby.el --- Async Babel Interaction with Ruby sessions -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019
 
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; Support for evaluating R code asynchronously in org-babel sessions.
+;; Support for evaluating Ruby code asynchronously in org-babel sessions.
 
 ;;; Code:
 
@@ -97,7 +97,7 @@ by `ob-session-async-filter'."
 
 (defun ob-session-async-ruby-value-callback (params tmp-file)
   "Callback for async value results.
-Assigned locally to `ob-session-async-file-callback' in R
+Assigned locally to `ob-session-async-file-callback' in Ruby
 comint buffers used for asynchronous Babel evaluation."
   (with-temp-buffer
     (insert-file-contents tmp-file)
