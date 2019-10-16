@@ -46,6 +46,13 @@
 
 (defconst ob-session-async-ruby-indicator "puts 'ob_comint_async_ruby_%s_%s'")
 
+(defun ob-session-async-ruby-chunk-callback (string)
+  (let* ((prefix-regexp "^=> nil\nirb([A-Za-z]+)[0-9:]+> ")
+          (suffix-regexp "\n=> true\nirb([A-Za-z]+)[0-9:]+>$")
+          (new-string (replace-regexp-in-string suffix-regexp ""
+                        (replace-regexp-in-string prefix-regexp "" string))))
+    (org-babel-chomp new-string)))
+
 (defun ob-session-async-org-babel-ruby-evaluate-session (buffer body &optional result-type result-params)
   "Asynchronously evaluate BODY in SESSION.
 Returns a placeholder string for insertion, to later be replaced
@@ -53,22 +60,22 @@ by `ob-session-async-filter'."
   (ob-session-async-register
     buffer (current-buffer)
     "ob_comint_async_ruby_\\(.+\\)_\\(.+\\)"
-    'org-babel-chomp
+    'ob-session-async-ruby-chunk-callback
     'ob-session-async-ruby-value-callback)
   ;; comint session evaluation
   (pcase result-type
     (`output
       (let* ((uuid (md5 (number-to-string (random 100000000)))))
         (with-current-buffer buffer
-          (insert (format ob-session-async-ruby-indicator "start" uuid))
-          (insert "\n")
-          (insert "conf.echo=false;_org_prompt_mode=conf.prompt_mode;conf.prompt_mode=:NULL")
-          (insert "\n")
-          (insert body)
-          (insert "\n")
-          (insert "conf.prompt_mode=_org_prompt_mode;conf.echo=true;")
-          (insert "\n")
-          (insert (format ob-session-async-ruby-indicator "end" uuid))
+          (mapc
+            (lambda (line)
+              (insert (org-babel-chomp line)) (comint-send-input nil t))
+            (list
+              (format ob-session-async-ruby-indicator "start" uuid)
+              "conf.echo=false;_org_prompt_mode=conf.prompt_mode;conf.prompt_mode=:NULL"
+              body
+              "conf.prompt_mode=_org_prompt_mode;conf.echo=true"
+              (format ob-session-async-ruby-indicator "end" uuid)))
           (comint-send-input))
         uuid))
     (`value
@@ -90,7 +97,7 @@ by `ob-session-async-filter'."
                 (list
                   "results=_" "require 'pp'" "orig_out = $stdout"
                   (format org-babel-ruby-pp-f-write
-			              (org-babel-process-file-name tmp-file 'noquote))))
+                    (org-babel-process-file-name tmp-file 'noquote))))
               (list (format ob-session-async-ruby-indicator "file" tmp-file))))
           (comint-send-input nil t))
         tmp-file))))
