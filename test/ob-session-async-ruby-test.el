@@ -1,4 +1,4 @@
-;;; ob-session-async-test.el --- Tests for ob-session-async
+;;; ob-session-async-ruby-test.el --- Tests for ob-session-async
 
 (require 'org-test)
 (require 'ob-session-async-ruby)
@@ -25,7 +25,7 @@
                 (and (not (string= expected (org-babel-execute-src-block)))
                   (string-match-p expected
                     (progn
-                      (sleep-for 0 300)
+                      (sleep-for 0 400)
                       (goto-char (org-babel-where-is-src-block-result))
                       (org-babel-read-result)))))))))
 
@@ -38,7 +38,7 @@
     (org-test-with-temp-text
       (concat src-block results-before)
       (should (progn (org-babel-execute-src-block)
-                (sleep-for 0 300)
+                (sleep-for 0 400)
                 (string= (concat src-block results-after)
                   (buffer-string)))))))
 
@@ -50,7 +50,7 @@
     (org-test-with-temp-text
       src-block
       (should (progn (org-babel-execute-src-block)
-                (sleep-for 0 200)
+                (sleep-for 0 400)
                 (string= (concat src-block result)
                   (buffer-string)))))))
 
@@ -62,7 +62,8 @@
     (org-test-with-temp-text
       src-block
       (should (progn (org-babel-execute-src-block)
-                (sleep-for 0 200)
+                (sleep-for 0 400)
                 (string= (concat src-block result)
                   (buffer-string)))))))
-;;; ob-session-async-test.el ends here
+
+;;; ob-session-async-ruby-test.el ends here
