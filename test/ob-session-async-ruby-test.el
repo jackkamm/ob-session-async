@@ -29,6 +29,19 @@
                       (goto-char (org-babel-where-is-src-block-result))
                       (org-babel-read-result)))))))))
 
+(ert-deftest ob-session-async-ruby-named-output ()
+  (let ((org-babel-temporary-directory "/tmp")
+        (org-confirm-babel-evaluate nil)
+        (src-block "#+begin_src ruby :async :session ruby :results output\n  p [1, 2, 3, 4]\n#+end_src")
+        (results-before "\n\n#+NAME: foobar\n#+RESULTS:\n: [1, 2, 3, 4]")
+        (results-after "\n\n#+NAME: foobar\n#+RESULTS:\n: [1, 2, 3, 4]\n"))
+    (org-test-with-temp-text
+     (concat src-block results-before)
+     (should (progn (org-babel-execute-src-block)
+                    (sleep-for 0 400)
+                    (string= (concat src-block results-after)
+                             (buffer-string)))))))
+
 (ert-deftest ob-session-async-ruby-named-value ()
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil)
