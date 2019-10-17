@@ -2,9 +2,9 @@
 
 This package extends org-babel to allow asynchronous session evaluation.
 
-It currently implements async session evaluation for R, and also
-provides functionality for implementing async session evaluation in
-other language modes that use comint.
+It currently implements async session evaluation for R and Ruby, and
+also provides functionality for implementing async session evaluation
+in other language modes that use comint.
 
 * Status
 
@@ -17,8 +17,8 @@ The org-mode mailing list has recently expressed interest in including
 this code in org-mode ([[https://lists.gnu.org/archive/html/emacs-orgmode/2019-08/msg00191.html][thread]]), and a medium-term goal of the project
 is to contribute this functionality back upstream to org-mode.
 
-My next short-term goal is to implement this functionality for at
-least one other language, probably Python.
+The next short-term goal for this project is to add support for a
+third language.
 
 * Installation & usage
 
