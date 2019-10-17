@@ -1,4 +1,4 @@
-;;; ob-session-async-test.el --- Tests for ob-session-async
+;;; ob-session-async-R-test.el --- Tests for ob-session-async
 
 (require 'org-test)
 (require 'ess-r-mode)
@@ -7,6 +7,7 @@
 (ert-deftest ob-session-async-R-simple-session-async-value ()
   (let (ess-ask-for-ess-directory
         ess-history-file
+        (org-babel-temporary-directory "/tmp")
         (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
      "#+begin_src R :session R :async yes\n  Sys.sleep(.1)\n  paste(\"Yep!\")\n#+end_src\n"
@@ -21,6 +22,7 @@
 (ert-deftest ob-session-async-R-simple-session-async-output ()
   (let (ess-ask-for-ess-directory
         ess-history-file
+        (org-babel-temporary-directory "/tmp")
         (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
      "#+begin_src R :session R :results output :async yes\n  Sys.sleep(.1)\n  1:5\n#+end_src\n"
@@ -35,6 +37,7 @@
 (ert-deftest ob-session-async-R-named-output ()
   (let (ess-ask-for-ess-directory
         ess-history-file
+        (org-babel-temporary-directory "/tmp")
         org-confirm-babel-evaluate
         (src-block "#+begin_src R :async :session R :results output\n  1:5\n#+end_src")
         (results-before "\n\n#+NAME: foobar\n#+RESULTS:\n: [1] 1")
@@ -50,6 +53,7 @@
   (let (ess-ask-for-ess-directory
         ess-history-file
         org-confirm-babel-evaluate
+        (org-babel-temporary-directory "/tmp")
         (src-block "#+begin_src R :async :session R :results value\n  paste(\"Yep!\")\n#+end_src")
         (results-before "\n\n#+NAME: foobar\n#+RESULTS:\n: [1] 1")
         (results-after "\n\n#+NAME: foobar\n#+RESULTS:\n: Yep!\n"))
@@ -64,6 +68,7 @@
   (let (ess-ask-for-ess-directory
         ess-history-file
         org-confirm-babel-evaluate
+        (org-babel-temporary-directory "/tmp")
         (src-block "#+begin_src R :async :session R :results output drawer\n  1:5\n#+end_src")
         (result "\n\n#+RESULTS:\n:results:\n[1] 1 2 3 4 5\n:end:\n"))
     (org-test-with-temp-text
@@ -77,6 +82,7 @@
   (let (ess-ask-for-ess-directory
         ess-history-file
         org-confirm-babel-evaluate
+        (org-babel-temporary-directory "/tmp")
         (src-block "#+begin_src R :async :session R :results value drawer\n  1:3\n#+end_src")
         (result "\n\n#+RESULTS:\n:results:\n1\n2\n3\n:end:\n"))
     (org-test-with-temp-text
@@ -86,4 +92,4 @@
                     (string= (concat src-block result)
                              (buffer-string)))))))
 
-;;; ob-session-async-test.el ends here
+;;; ob-session-async-R-test.el ends here

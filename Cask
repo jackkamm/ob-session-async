@@ -9,4 +9,5 @@
              :git "https://code.orgmode.org/bzg/org-mode.git"
              :files ("lisp/*.el" "contrib/lisp/*.el" "testing/org-test.el"))
  (depends-on "ob-async")
+ (depends-on "inf-ruby")
  (depends-on "ess"))
