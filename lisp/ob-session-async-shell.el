@@ -68,6 +68,7 @@ by `ob-session-async-filter'."
        'ob-session-async-sh-value-callback))
     (with-current-buffer (generate-new-buffer "*sh-temp*")
       (let ((temp-buffer (current-buffer)))
+        (insert (concat "PS1=$'\\n" prompt "'\n"))
         (insert (concat "PS2=$'\\n" prompt "'\n"))
         (insert (format ob-session-async-sh-indicator
                         "start" uuid))
@@ -98,8 +99,7 @@ by `ob-session-async-filter'."
           (org-babel-comint-in-buffer session
                                       (add-hook 'comint-output-filter-functions #'send-line)
                                       (goto-char (process-mark (get-buffer-process (current-buffer))))
-                                      (insert (concat "PS1=$'\\n" prompt "'"))
-                                      (comint-send-input)))))
+                                      (send-line prompt)))))
     uuid))
 
 (defun ob-session-async-sh-value-callback (params tmp-file)
