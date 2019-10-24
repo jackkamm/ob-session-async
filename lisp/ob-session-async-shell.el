@@ -73,6 +73,9 @@ by `ob-session-async-filter'."
         (insert (format ob-session-async-sh-indicator
                         "start" uuid))
         (insert "\n")
+        (insert (concat "atexit() { " (format ob-session-async-sh-indicator
+                                            "end" uuid)) "; }\n")
+        (insert "trap atexit EXIT\n")
         (insert body)
         (insert "\n")
         (insert (format ob-session-async-sh-indicator
