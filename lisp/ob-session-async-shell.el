@@ -35,13 +35,12 @@
             (equal (cdr async) "no")
             (equal (cdr session) "none"))
         (funcall orig-fun body params)
-      (progn
-        (advice-add 'org-babel-sh-evaluate
-                    :override 'ob-session-async-org-babel-sh-evaluate-session)
-        (let ((result (funcall orig-fun body params)))
-          (advice-remove 'org-babel-sh-evaluate
-                         'ob-session-async-org-babel-sh-evaluate-session)
-          result)))))
+      (prog2
+	  (advice-add 'org-babel-sh-evaluate
+		      :override 'ob-session-async-org-babel-sh-evaluate-session)
+	  (funcall orig-fun body params)
+	(advice-remove 'org-babel-sh-evaluate
+		       'ob-session-async-org-babel-sh-evaluate-session)))))
 
 (advice-add 'org-babel-execute:shell :around 'ob-session-async-org-babel-execute:shell)
 
