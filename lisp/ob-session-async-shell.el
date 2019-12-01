@@ -44,7 +44,9 @@
 
 (advice-add 'org-babel-execute:shell :around 'ob-session-async-org-babel-execute:shell)
 
-(defconst ob-session-async-sh-indicator "printf 'ob_comint_async_sh_%s_%s'")
+(defconst ob-session-async-sh-feedback "%s>")
+(defconst ob-session-async-sh-indicator "ob_comint_async_sh_%s_%s")
+(defconst ob-session-async-sh-indicator-printf (format "printf '%s'\n" ob-session-async-sh-indicator))
 
 (defun ob-session-async-org-babel-sh-evaluate-session
     (session body &optional params stdin cmdline)
@@ -53,8 +55,8 @@ Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
   (let* ((shebang (cdr (assq :shebang params)))
          (uuid (md5 (number-to-string (random 100000000))))
-         (prompt (format "%s>" uuid))
-         (end-prompt (format "ob_comint_async_sh_%s_%s" "end" uuid))
+         (prompt (format ob-session-async-sh-feedback uuid))
+         (end-prompt (format ob-session-async-sh-indicator "end" uuid))
          (comint-prompt-regexp (format "^%s" prompt)))
     (cl-flet ((remove-prompt (string)
                              (replace-regexp-in-string
@@ -68,39 +70,34 @@ by `ob-session-async-filter'."
        'ob-session-async-sh-value-callback))
     (with-current-buffer (generate-new-buffer "*sh-temp*")
       (let ((temp-buffer (current-buffer)))
-        (insert (concat "PS1=$'\\n" prompt "'\n"))
-        (insert (concat "PS2=$'\\n" prompt "'\n"))
-        (insert (format ob-session-async-sh-indicator
-                        "start" uuid))
-        (insert "\n")
-        (insert (concat "atexit() { " (format ob-session-async-sh-indicator
-                                            "end" uuid)) "; }\n")
+        (insert "PS1=$'\\n" prompt "'\n")
+        (insert "PS2=$'\\n" prompt "'\n")
+        (insert (format ob-session-async-sh-indicator-printf "start" uuid))
+        (insert "atexit() { " (format ob-session-async-sh-indicator "end" uuid) "; }\n")
         (insert "trap atexit EXIT\n")
-        (insert body)
-        (insert "\n")
-        (insert (format ob-session-async-sh-indicator
-                        "end" uuid))
-        (insert "\n")
+        (insert body "\n")
+        (insert (format ob-session-async-sh-indicator-printf "end" uuid))
 
         (cl-labels ((send-line (prompt?)
-                               (when (equal `(,end-prompt) (last (split-string prompt? "\n")))
-                                 (kill-buffer temp-buffer)
-                                 (remove-hook 'comint-output-filter-functions #'send-line))
-                               (when (equal `(,prompt) (last (split-string prompt? "\n")))
-                                 (with-current-buffer temp-buffer
-                                   (beginning-of-buffer)
-                                   (setq last-command 'nil)
-                                   (kill-whole-line)
-                                   (org-babel-comint-in-buffer session
-                                     (goto-char (process-mark (get-buffer-process (current-buffer))))
-                                     (yank)
-                                     (delete-backward-char 1)
-                                     (comint-send-input))))
+			       (cl-loop for line in (split-string prompt? "\n")
+					if (equal end-prompt line) do
+					(kill-buffer temp-buffer)
+					(remove-hook 'comint-output-filter-functions #'send-line)
+					if (equal prompt line) do
+					(with-current-buffer temp-buffer
+					  (beginning-of-buffer)
+					  (setq last-command 'nil)
+					  (kill-whole-line)
+					  (org-babel-comint-in-buffer session
+					    (goto-char (process-mark (get-buffer-process (current-buffer))))
+					    (yank)
+					    (delete-backward-char 1)
+					    (comint-send-input))))
                                ""))
           (org-babel-comint-in-buffer session
-                                      (add-hook 'comint-output-filter-functions #'send-line)
-                                      (goto-char (process-mark (get-buffer-process (current-buffer))))
-                                      (send-line prompt)))))
+            (add-hook 'comint-output-filter-functions #'send-line)
+            (goto-char (process-mark (get-buffer-process (current-buffer))))
+            (send-line prompt)))))
     uuid))
 
 (defun ob-session-async-sh-value-callback (params tmp-file)
