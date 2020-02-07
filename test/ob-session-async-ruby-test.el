@@ -3,7 +3,20 @@
 (require 'org-test)
 (require 'ob-session-async-ruby)
 
+
+(defvar ob-session-async-ruby--ert-expected-result
+  (let* ((irb-version (shell-command-to-string "irb --version"))
+         (irb-version (progn (string-match "irb \\([0-9]+\\.[0-9]\\)+\\.[0-9]+"
+                                           irb-version)
+                             (match-string 1 irb-version))))
+    (if irb-version
+        (if (< 1.2 (string-to-number irb-version))
+            :passed
+          :failed)
+      :failed)))
+
 (ert-deftest ob-session-async-ruby-simple-session-async-value ()
+  :expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
@@ -17,6 +30,7 @@
                     (org-babel-read-result))))))))
 
 (ert-deftest ob-session-async-ruby-simple-session-async-output ()
+  ;;:expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil))
     (org-test-with-temp-text
@@ -30,6 +44,7 @@
                       (org-babel-read-result)))))))))
 
 (ert-deftest ob-session-async-ruby-named-output ()
+  :expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
         (org-confirm-babel-evaluate nil)
         (src-block "#+begin_src ruby :async :session ruby :results output\n  p [1, 2, 3, 4]\n#+end_src")
@@ -43,6 +58,7 @@
                              (buffer-string)))))))
 
 (ert-deftest ob-session-async-ruby-named-value ()
+  :expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil)
          (src-block "#+begin_src ruby :async :session ruby :results value\n\"Yep!\"\n#+end_src")
@@ -53,9 +69,10 @@
       (should (progn (org-babel-execute-src-block)
                 (sleep-for 0 400)
                 (string= (concat src-block results-after)
-                  (buffer-string)))))))
+                         (buffer-string)))))))
 
 (ert-deftest ob-session-async-ruby-output-drawer ()
+  :expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil)
          (src-block "#+begin_src ruby :async :session ruby :results output drawer\np [1, 2, 3, 4]\n#+end_src")
@@ -65,9 +82,10 @@
       (should (progn (org-babel-execute-src-block)
                 (sleep-for 0 400)
                 (string= (concat src-block result)
-                  (buffer-string)))))))
+                         (buffer-string)))))))
 
 (ert-deftest ob-session-async-ruby-value-drawer ()
+  :expected-result ob-session-async-ruby--ert-expected-result
   (let ((org-babel-temporary-directory "/tmp")
          (org-confirm-babel-evaluate nil)
          (src-block "#+begin_src ruby :async :session ruby :results value drawer\n  [1, 2, 3, 4]\n#+end_src")
@@ -77,6 +95,6 @@
       (should (progn (org-babel-execute-src-block)
                 (sleep-for 0 400)
                 (string= (concat src-block result)
-                  (buffer-string)))))))
+                         (buffer-string)))))))
 
 ;;; ob-session-async-ruby-test.el ends here
