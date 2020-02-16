@@ -47,6 +47,9 @@
 
 (defconst ob-session-async-python-indicator "print ('ob_comint_async_python_%s_%s')")
 
+(defun ob-session-async-python-value-callback (params tmp-file)
+  (org-babel-eval-read-file tmp-file))
+
 (defun ob-session-async-org-babel-python-evaluate-session
     (session body &optional result-type result-params)
   "Asynchronously evaluate BODY in SESSION.
@@ -55,7 +58,7 @@ by `ob-session-async-filter'."
   (ob-session-async-register
    session (current-buffer)
    "ob_comint_async_python_\\(.+\\)_\\(.+\\)"
-   'org-babel-chomp nil)
+   'org-babel-chomp 'ob-session-async-python-value-callback)
   (let ((python-shell-buffer-name (org-babel-python-without-earmuffs session)))
     (pcase result-type
       (`output
@@ -69,8 +72,26 @@ by `ob-session-async-filter'."
            (python-shell-send-buffer))
          uuid))
       (`value
-       (message "ob-session-async-python: results:value not implemented")
-       nil))))
+       ;; TODO: require dependancy of Org 9.4 (not yet released as of 2020-02-15)
+       (let ((tmp-results-file (org-babel-temp-file "python-"))
+             (tmp-src-file (org-babel-temp-file "python-")))
+         (with-temp-file tmp-src-file (insert body))
+         (with-temp-buffer
+           (insert (format org-babel-python--eval-ast tmp-src-file))
+           (insert (format (if (member "pp" result-params)
+                               "
+import pprint
+with open('%s', 'w') as f:
+    f.write(pprint.pformat(__org_babel_python_final))"
+                             "
+with open('%s', 'w') as f:
+    f.write(str(__org_babel_python_final))")
+                           (org-babel-process-file-name
+                            tmp-results-file 'noquote)))
+           (insert "\n")
+           (insert (format ob-session-async-python-indicator "file" tmp-results-file))
+           (python-shell-send-buffer))
+         tmp-results-file)))))
 
 (provide 'ob-session-async-python)
 
