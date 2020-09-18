@@ -3,6 +3,7 @@
 ;; Copyright (C) 2019
 
 ;; Author:  <jackkamm@gmail.com>
+;; Package-Requires: ((org "9.4"))
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -72,22 +73,11 @@ by `ob-session-async-filter'."
            (python-shell-send-buffer))
          uuid))
       (`value
-       ;; TODO: require dependancy of Org 9.4 (not yet released as of 2020-02-15)
        (let ((tmp-results-file (org-babel-temp-file "python-"))
              (tmp-src-file (org-babel-temp-file "python-")))
          (with-temp-file tmp-src-file (insert body))
          (with-temp-buffer
-           (insert (format org-babel-python--eval-ast tmp-src-file))
-           (insert (format (if (member "pp" result-params)
-                               "
-import pprint
-with open('%s', 'w') as f:
-    f.write(pprint.pformat(__org_babel_python_final))"
-                             "
-with open('%s', 'w') as f:
-    f.write(str(__org_babel_python_final))")
-                           (org-babel-process-file-name
-                            tmp-results-file 'noquote)))
+           (insert (org-babel-python-format-session-value tmp-src-file tmp-results-file result-params))
            (insert "\n")
            (insert (format ob-session-async-python-indicator "file" tmp-results-file))
            (python-shell-send-buffer))
