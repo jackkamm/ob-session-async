@@ -3,7 +3,7 @@
 This package extends org-babel to allow asynchronous session evaluation.
 
 It currently implements async session evaluation for R, Ruby, and
-Python*, and also provides functionality for implementing async
+Python, and also provides functionality for implementing async
 session evaluation in other language modes that use comint.
 
 * Status
