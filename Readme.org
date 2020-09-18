@@ -13,9 +13,8 @@ This package is still in an experimental stage, and not available in MELPA.
 However, the code is fairly robust now, and I am using it regularly for my
 day-to-day data analysis in R.
 
-Currently, we have implemented async session evaluation for R and
-Ruby. We have partial support for Python (we support =:results
-output=, but NOT =:results value=).
+Currently, we have implemented async session evaluation for R, Ruby,
+and Python.
 
 The org-mode mailing list has expressed some interest in including
 this code in org-mode ([[https://lists.gnu.org/archive/html/emacs-orgmode/2019-08/msg00191.html][thread]]), and a long-term goal of the project is
@@ -23,7 +22,9 @@ to contribute this functionality back upstream to org-mode.
 
 * Installation & usage
 
-First ensure the ~lisp/~ directory is in your ~load-path~, and ~R~ is
+First, make sure you have installed the latest Org release (9.4).
+
+Next ensure the ~lisp/~ directory is in your ~load-path~, and ~R~ is
 in ~org-babel-load-languages~. Then, ~(require
 'ob-session-async-R)~. You will then be able to asynchronously
 evaluate R code blocks like the below:
