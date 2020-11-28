@@ -58,7 +58,7 @@ Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
   (ob-session-async-register
    session (current-buffer)
-   "ob_comint_async_python_\\(.+\\)_\\(.+\\)"
+   "ob_comint_async_python_\\(.+?\\)_\\(.+\\)"
    'org-babel-chomp 'ob-session-async-python-value-callback)
   (let ((python-shell-buffer-name (org-babel-python-without-earmuffs session)))
     (pcase result-type

@@ -59,7 +59,7 @@ Returns a placeholder string for insertion, to later be replaced
 by `ob-session-async-filter'."
   (ob-session-async-register
     buffer (current-buffer)
-    "ob_comint_async_ruby_\\(.+\\)_\\(.+\\)"
+    "ob_comint_async_ruby_\\(.+?\\)_\\(.+\\)"
     'ob-session-async-ruby-chunk-callback
     'ob-session-async-ruby-value-callback)
   ;; comint session evaluation
