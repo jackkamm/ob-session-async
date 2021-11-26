@@ -1,28 +1,21 @@
 #+TITLE: ob-session-async
 
-This package extends org-babel to allow asynchronous session evaluation.
+As of Org 9.5, this package is obsolete, with the core functionality
+now included in Org mode.
 
-It currently implements async session evaluation for R, Ruby, and
-Python, and also provides functionality for implementing async
-session evaluation in other language modes that use comint.
+This was a package to extend org-babel to allow asynchronous session
+evaluation. It implemented async session evaluation for R, Ruby, and
+Python, and also provides functionality for implementing async session
+evaluation in other language modes that use comint.
 
 * Status
 
-This package is still in an experimental stage, and not available in MELPA.
-
-However, the code is fairly robust now, and I am using it regularly for my
-day-to-day data analysis in R.
-
-Currently, we have implemented async session evaluation for R, Ruby,
-and Python.
-
-The org-mode mailing list has expressed some interest in including
-this code in org-mode ([[https://lists.gnu.org/archive/html/emacs-orgmode/2019-08/msg00191.html][thread]]), and a long-term goal of the project is
-to contribute this functionality back upstream to org-mode.
+This project has achieved its goal of being added upstream into Org
+mode. Therefore, I am archiving it.
 
 * Installation & usage
 
-First, make sure you have installed the latest Org release (9.4).
+First, make sure you have installed Org 9.4 or later.
 
 Next ensure the ~lisp/~ directory is in your ~load-path~, and ~R~ is
 in ~org-babel-load-languages~. Then, ~(require
